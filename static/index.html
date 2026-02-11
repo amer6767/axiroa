@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Axiroa – AI Full-Stack Builder</title>
+    <meta name="description" content="Build full-stack web applications with AI. Prompt, plan, and ship in real-time.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+    <!-- ============= HOME PAGE ============= -->
+    <div id="home-page" class="home-page">
+        <nav class="home-nav">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <span>Axiroa</span>
+                <span class="logo-badge">AI</span>
+            </div>
+            <div class="nav-actions">
+                <button class="glass-btn" id="home-supabase-btn" title="Supabase Settings">
+                    <i class="fa-solid fa-database"></i>
+                    <span class="status-indicator" id="home-supabase-status"></span>
+                </button>
+            </div>
+        </nav>
+
+        <main class="home-content">
+            <div class="hero-glow"></div>
+            <h1 class="hero-title">What do you want to <span class="gradient-text">build</span>?</h1>
+            <p class="hero-subtitle">Prompt, plan, and build full-stack web apps with AI – in real-time.</p>
+
+            <div id="projects-grid" class="projects-grid">
+                <!-- Projects loaded dynamically -->
+            </div>
+        </main>
+    </div>
+
+    <!-- ============= WORKSPACE ============= -->
+    <div id="workspace" class="workspace" style="display: none;">
+        <!-- Header -->
+        <header class="workspace-header">
+            <div class="header-left">
+                <button class="header-icon-btn" id="back-btn" title="Back to projects">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="header-divider"></div>
+                <div class="project-info">
+                    <span class="project-name" id="project-name-display">Untitled</span>
+                    <div class="status-badge" id="status-badge">
+                        <span class="status-pulse"></span>
+                        <span class="status-label" id="status-text">Ready</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <select class="model-select" id="model-select">
+                    <option value="llama-3.3-70b">Llama 3.3 70B</option>
+                    <option value="qwen-2.5-32b">Qwen 2.5 32B</option>
+                </select>
+                <button class="header-icon-btn" id="search-btn" title="Search (Ctrl+K)">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
+                <button class="header-icon-btn" id="workspace-supabase-btn" title="Database">
+                    <i class="fa-solid fa-database"></i>
+                    <span class="status-indicator" id="workspace-supabase-status"></span>
+                </button>
+                <button class="header-icon-btn" id="settings-btn" title="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="workspace-main">
+            <!-- Chat Panel -->
+            <div class="chat-panel" id="chat-panel">
+                <div class="chat-messages" id="chat-messages">
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <h3>What would you like to build?</h3>
+                        <p>I can create, edit, and fix your code in real-time.</p>
+                        <div class="suggestion-chips">
+                            <button class="chip" data-prompt="Build a modern todo app with local storage">📝 Todo App</button>
+                            <button class="chip" data-prompt="Build a calculator with a sleek dark UI">🧮 Calculator</button>
+                            <button class="chip" data-prompt="Build a personal portfolio website with animations">🌐 Portfolio</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Build Progress -->
+                <div class="build-progress" id="build-progress" style="display: none;">
+                    <div class="progress-steps" id="progress-steps"></div>
+                </div>
+
+                <!-- Console Log -->
+                <div class="console-panel" id="console-panel" style="display: none;">
+                    <div class="console-header">
+                        <span><i class="fa-solid fa-terminal"></i> Console</span>
+                        <button class="console-toggle" id="console-toggle">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                    </div>
+                    <div class="console-body" id="console-body"></div>
+                </div>
+
+                <!-- Mode Selector & Input -->
+                <div class="chat-input-area">
+                    <div class="mode-selector">
+                        <button class="mode-btn active" id="build-mode-btn" data-mode="build">
+                            <i class="fa-solid fa-hammer"></i>
+                            <span>Build</span>
+                        </button>
+                        <button class="mode-btn" id="plan-mode-btn" data-mode="plan">
+                            <i class="fa-solid fa-clipboard-list"></i>
+                            <span>Plan</span>
+                        </button>
+                        <button class="mode-btn" id="ui-fix-mode-btn" data-mode="ui_fix">
+                            <i class="fa-solid fa-paintbrush"></i>
+                            <span>UI Fix</span>
+                        </button>
+                    </div>
+
+                    <div class="input-container">
+                        <button class="input-action-btn" id="upload-btn" title="Upload files">
+                            <i class="fa-solid fa-paperclip"></i>
+                        </button>
+                        <input type="file" id="file-upload" multiple hidden>
+                        <textarea id="user-input" placeholder="Describe what you want to build..." rows="1"></textarea>
+                        <button class="send-btn" id="send-btn" disabled>
+                            <i class="fa-solid fa-arrow-up"></i>
+                        </button>
+                    </div>
+
+                    <div class="uploaded-files" id="uploaded-files" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Resize Handle -->
+            <div class="resize-handle" id="resize-handle">
+                <div class="resize-line"></div>
+            </div>
+
+            <!-- Code Panel -->
+            <div class="code-panel" id="code-panel">
+                <div class="panel-header">
+                    <div class="panel-tabs">
+                        <button class="panel-tab active" id="code-tab">
+                            <i class="fa-solid fa-code"></i>
+                            Code
+                        </button>
+                        <button class="panel-tab" id="preview-tab">
+                            <i class="fa-solid fa-eye"></i>
+                            Preview
+                        </button>
+                    </div>
+
+                    <div class="panel-actions">
+                        <span class="file-path" id="file-path">No file selected</span>
+                        <button class="header-icon-btn small" id="download-btn" title="Download Project">
+                            <i class="fa-solid fa-download"></i>
+                        </button>
+                        <button class="header-icon-btn small" id="refresh-preview" title="Refresh Preview">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Editor View -->
+                <div class="editor-view" id="editor-view">
+                    <div class="file-sidebar">
+                        <div class="sidebar-header">
+                            <span>Explorer</span>
+                        </div>
+                        <div class="file-tree" id="file-tree"></div>
+                        <div class="empty-files" id="empty-files">
+                            <i class="fa-regular fa-folder-open"></i>
+                            <p>No files yet</p>
+                        </div>
+                    </div>
+                    <div class="editor-area">
+                        <div class="editor-placeholder" id="editor-placeholder">
+                            <i class="fa-regular fa-file-code"></i>
+                            <p>Select a file to edit</p>
+                        </div>
+                        <textarea class="code-editor" id="code-editor" spellcheck="false"
+                            style="display: none;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Preview View -->
+                <div class="preview-view" id="preview-view" style="display: none;">
+                    <iframe id="preview-iframe" sandbox="allow-scripts allow-same-origin"></iframe>
+                </div>
+
+                <!-- Plan View -->
+                <div class="plan-view" id="plan-view" style="display: none;">
+                    <div class="plan-content" id="plan-content"></div>
+                    <div class="plan-actions">
+                        <button class="btn ghost" id="edit-plan-btn">Edit Plan</button>
+                        <button class="btn primary glow" id="approve-plan-btn">
+                            <i class="fa-solid fa-check"></i>
+                            Approve & Build
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============= MODALS ============= -->
+
+    <!-- New Project Modal -->
+    <div class="modal-overlay" id="modal-overlay" style="display:none">
+        <div class="modal glass-card">
+            <div class="modal-header">
+                <h3>Create new project</h3>
+                <button class="modal-close" id="modal-close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label>Project name</label>
+                <input type="text" id="project-name-input" placeholder="My awesome project" value="My Project">
+            </div>
+            <div class="modal-footer">
+                <button class="btn ghost" id="modal-cancel">Cancel</button>
+                <button class="btn primary" id="modal-confirm">
+                    <i class="fa-solid fa-plus"></i> Create
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Questionnaire Modal -->
+    <div class="modal-overlay questionnaire" id="questionnaire-overlay" style="display:none">
+        <div class="modal glass-card questionnaire-modal">
+            <button class="modal-close" id="questionnaire-close">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="question-container" id="question-container"></div>
+            <div class="questionnaire-nav">
+                <button class="btn ghost" id="q-skip">Skip</button>
+                <div class="nav-buttons">
+                    <button class="btn ghost" id="q-prev" disabled>
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button class="btn primary" id="q-submit">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase Settings Modal -->
+    <div class="modal-overlay" id="supabase-overlay" style="display:none">
+        <div class="modal glass-card">
+            <div class="modal-header">
+                <div class="modal-title-icon">
+                    <i class="fa-solid fa-database"></i>
+                    <h3>Connect Supabase</h3>
+                </div>
+                <button class="modal-close" id="supabase-close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description">Connect your Supabase project to enable database features.</p>
+                <label>Project URL</label>
+                <input type="text" id="supabase-url" placeholder="https://your-project.supabase.co">
+                <label>Anon Key</label>
+                <input type="text" id="supabase-key" placeholder="eyJhbGciOiJIUzI1NiIs...">
+                <label>Service Role Key <span class="label-hint">(optional)</span></label>
+                <input type="password" id="supabase-service-key" placeholder="eyJhbGciOiJIUzI1NiIs...">
+            </div>
+            <div class="modal-footer">
+                <button class="btn ghost" id="supabase-disconnect">Disconnect</button>
+                <button class="btn primary" id="supabase-save">
+                    <i class="fa-solid fa-bolt"></i> Connect
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-overlay" style="display:none">
+        <div class="modal glass-card">
+            <div class="modal-header">
+                <div class="modal-title-icon">
+                    <i class="fa-solid fa-gear"></i>
+                    <h3>Settings</h3>
+                </div>
+                <button class="modal-close" id="settings-close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label>Auto-save</label>
+                    <label class="toggle">
+                        <input type="checkbox" id="autosave-toggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="setting-group">
+                    <div>
+                        <label>Delete all projects</label>
+                        <p class="setting-hint">This cannot be undone</p>
+                    </div>
+                    <button class="btn danger-ghost" id="delete-all-btn">Delete All</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn primary" id="settings-save">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div class="modal-overlay search-overlay" id="search-overlay" style="display: none;">
+        <div class="search-modal glass-card">
+            <div class="search-header">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="search-input" placeholder="Ask anything...">
+                <button class="modal-close" id="search-close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="search-results" id="search-results"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
