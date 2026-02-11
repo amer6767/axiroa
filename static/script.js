@@ -153,6 +153,7 @@ function init() {
     loadSupabaseConfig();
     setupEventListeners();
     initResize();
+    initSupabaseTabs();
     console.log('Axiroa initialized!');
 }
 
@@ -303,6 +304,8 @@ function deleteAllProjects() {
 }
 
 // ============= SUPABASE =============
+const supabaseTest = $('supabase-test');
+
 function loadSupabaseConfig() {
     try {
         const saved = localStorage.getItem('axiroa_supabase');
@@ -311,22 +314,132 @@ function loadSupabaseConfig() {
             if (supabaseUrl) supabaseUrl.value = supabaseConfig.url || '';
             if (supabaseKey) supabaseKey.value = supabaseConfig.key || '';
             if (supabaseServiceKey) supabaseServiceKey.value = supabaseConfig.serviceKey || '';
+            // Restore auth provider toggles
+            const authProviders = supabaseConfig.authProviders || {};
+            const authEmail = document.getElementById('auth-email');
+            const authGoogle = document.getElementById('auth-google');
+            const authGithub = document.getElementById('auth-github');
+            const authMagic = document.getElementById('auth-magic');
+            if (authEmail) authEmail.checked = authProviders.email !== false;
+            if (authGoogle) authGoogle.checked = !!authProviders.google;
+            if (authGithub) authGithub.checked = !!authProviders.github;
+            if (authMagic) authMagic.checked = !!authProviders.magic;
             updateSupabaseStatus();
+            updateSupabaseBanner();
         }
     } catch (e) {
         console.error('Failed to load Supabase config:', e);
     }
 }
 
+function getAuthProviders() {
+    return {
+        email: document.getElementById('auth-email')?.checked ?? true,
+        google: document.getElementById('auth-google')?.checked ?? false,
+        github: document.getElementById('auth-github')?.checked ?? false,
+        magic: document.getElementById('auth-magic')?.checked ?? false
+    };
+}
+
 function saveSupabase() {
+    const url = supabaseUrl?.value?.trim() || '';
+    const key = supabaseKey?.value?.trim() || '';
+    if (!url || !key) {
+        setSupabaseBanner('disconnected', 'Missing credentials', 'Please enter both Project URL and Anon Key');
+        // Switch to credentials tab
+        switchSupabaseTab('credentials');
+        return;
+    }
     supabaseConfig = {
-        url: supabaseUrl?.value?.trim() || '',
-        key: supabaseKey?.value?.trim() || '',
-        serviceKey: supabaseServiceKey?.value?.trim() || ''
+        url: url,
+        key: key,
+        serviceKey: supabaseServiceKey?.value?.trim() || '',
+        authProviders: getAuthProviders()
     };
     localStorage.setItem('axiroa_supabase', JSON.stringify(supabaseConfig));
     updateSupabaseStatus();
+    setSupabaseBanner('connected', 'Connected', url.replace('https://', '').replace('.supabase.co', ''));
     closeSupabaseSettings();
+    logConsole('Supabase connected: ' + url, 'success');
+}
+
+async function testSupabaseConnection() {
+    const url = supabaseUrl?.value?.trim();
+    const key = supabaseKey?.value?.trim();
+    if (!url || !key) {
+        setSupabaseBanner('disconnected', 'Missing credentials', 'Enter Project URL and Anon Key first');
+        switchSupabaseTab('credentials');
+        return;
+    }
+    // Show testing state
+    setSupabaseBanner('testing', 'Testing connection...', url.replace('https://', ''));
+    const testBtn = supabaseTest;
+    if (testBtn) {
+        testBtn.classList.add('testing');
+        testBtn.innerHTML = '<i class="fa-solid fa-spinner"></i> Testing...';
+    }
+    try {
+        const response = await fetch(url + '/rest/v1/', {
+            method: 'GET',
+            headers: {
+                'apikey': key,
+                'Authorization': 'Bearer ' + key
+            }
+        });
+        if (response.ok || response.status === 200) {
+            setSupabaseBanner('connected', 'Connection successful!', url.replace('https://', '').replace('.supabase.co', ''));
+            logConsole('Supabase connection test: SUCCESS', 'success');
+        } else {
+            setSupabaseBanner('disconnected', `Connection failed (${response.status})`, 'Check your credentials and try again');
+            logConsole('Supabase connection test: FAILED (' + response.status + ')', 'error');
+        }
+    } catch (err) {
+        setSupabaseBanner('disconnected', 'Connection failed', err.message || 'Network error');
+        logConsole('Supabase connection test: ERROR - ' + err.message, 'error');
+    } finally {
+        if (testBtn) {
+            testBtn.classList.remove('testing');
+            testBtn.innerHTML = '<i class="fa-solid fa-plug-circle-check"></i> Test';
+        }
+    }
+}
+
+function setSupabaseBanner(state, main, sub) {
+    const icon = document.getElementById('supabase-conn-icon');
+    const text = document.getElementById('supabase-conn-text');
+    const subText = document.getElementById('supabase-conn-sub');
+    if (icon) {
+        icon.className = 'status-icon ' + state;
+        if (state === 'connected') icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+        else if (state === 'testing') icon.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        else icon.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+    }
+    if (text) text.textContent = main;
+    if (subText) subText.textContent = sub;
+}
+
+function updateSupabaseBanner() {
+    if (supabaseConfig?.url && supabaseConfig?.key) {
+        setSupabaseBanner('connected', 'Connected', supabaseConfig.url.replace('https://', '').replace('.supabase.co', ''));
+    } else {
+        setSupabaseBanner('disconnected', 'Not connected', 'Enter your project credentials below');
+    }
+}
+
+function switchSupabaseTab(tabId) {
+    document.querySelectorAll('.supabase-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.supabase-tab-content').forEach(c => c.classList.remove('active'));
+    const tab = document.querySelector(`.supabase-tab[data-tab="${tabId}"]`);
+    const content = document.getElementById('tab-' + tabId);
+    if (tab) tab.classList.add('active');
+    if (content) content.classList.add('active');
+}
+
+function initSupabaseTabs() {
+    document.querySelectorAll('.supabase-tab').forEach(tab => {
+        tab.onclick = () => switchSupabaseTab(tab.dataset.tab);
+    });
+    if (supabaseTest) supabaseTest.onclick = testSupabaseConnection;
 }
 
 function disconnectSupabase() {
@@ -335,8 +448,18 @@ function disconnectSupabase() {
     if (supabaseUrl) supabaseUrl.value = '';
     if (supabaseKey) supabaseKey.value = '';
     if (supabaseServiceKey) supabaseServiceKey.value = '';
+    // Reset auth toggles
+    const authEmail = document.getElementById('auth-email');
+    const authGoogle = document.getElementById('auth-google');
+    const authGithub = document.getElementById('auth-github');
+    const authMagic = document.getElementById('auth-magic');
+    if (authEmail) authEmail.checked = true;
+    if (authGoogle) authGoogle.checked = false;
+    if (authGithub) authGithub.checked = false;
+    if (authMagic) authMagic.checked = false;
     updateSupabaseStatus();
-    closeSupabaseSettings();
+    setSupabaseBanner('disconnected', 'Disconnected', 'Enter your project credentials below');
+    logConsole('Supabase disconnected', 'info');
 }
 
 function updateSupabaseStatus() {
@@ -346,6 +469,8 @@ function updateSupabaseStatus() {
 }
 
 function openSupabaseSettings() {
+    updateSupabaseBanner();
+    switchSupabaseTab('credentials');
     if (supabaseOverlay) {
         supabaseOverlay.style.display = 'flex';
         supabaseOverlay.offsetHeight;

@@ -701,11 +701,29 @@ async def chat(request: Request):
 
     supabase_context = ""
     if supabase_config and supabase_config.get("url"):
+        auth_providers = supabase_config.get("authProviders", {})
+        enabled_providers = [p for p, v in auth_providers.items() if v]
+        auth_info = ""
+        if enabled_providers:
+            auth_info = f"""
+Auth providers enabled: {', '.join(enabled_providers)}
+When the user wants login/signup, generate Supabase Auth code using @supabase/supabase-js:
+- Import: import {{ createClient }} from 'https://esm.sh/@supabase/supabase-js@2'
+- Init: const supabase = createClient('{supabase_config['url']}', 'SUPABASE_ANON_KEY')
+- Email signup: supabase.auth.signUp({{ email, password }})
+- Email login: supabase.auth.signInWithPassword({{ email, password }})
+- Google OAuth: supabase.auth.signInWithOAuth({{ provider: 'google' }})
+- GitHub OAuth: supabase.auth.signInWithOAuth({{ provider: 'github' }})
+- Magic link: supabase.auth.signInWithOtp({{ email }})
+- Logout: supabase.auth.signOut()
+- Get user: supabase.auth.getUser()
+- Listen for auth changes: supabase.auth.onAuthStateChange((event, session) => {{ ... }})
+Create beautiful login/signup forms with the enabled providers. Use modern glassmorphism styling."""
         supabase_context = f"""
 
 SUPABASE IS CONNECTED!
 Project URL: {supabase_config['url']}
-You can create tables, insert data, query data, and manage the database."""
+You can create tables, insert data, query data, and manage the database.{auth_info}"""
 
     # Current files context with content preview
     current_files = project_files[project_id]

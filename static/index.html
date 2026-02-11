@@ -9,7 +9,9 @@
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -92,9 +94,12 @@
                         <h3>What would you like to build?</h3>
                         <p>I can create, edit, and fix your code in real-time.</p>
                         <div class="suggestion-chips">
-                            <button class="chip" data-prompt="Build a modern todo app with local storage">📝 Todo App</button>
-                            <button class="chip" data-prompt="Build a calculator with a sleek dark UI">🧮 Calculator</button>
-                            <button class="chip" data-prompt="Build a personal portfolio website with animations">🌐 Portfolio</button>
+                            <button class="chip" data-prompt="Build a modern todo app with local storage">📝 Todo
+                                App</button>
+                            <button class="chip" data-prompt="Build a calculator with a sleek dark UI">🧮
+                                Calculator</button>
+                            <button class="chip" data-prompt="Build a personal portfolio website with animations">🌐
+                                Portfolio</button>
                         </div>
                     </div>
                 </div>
@@ -264,30 +269,222 @@
 
     <!-- Supabase Settings Modal -->
     <div class="modal-overlay" id="supabase-overlay" style="display:none">
-        <div class="modal glass-card">
+        <div class="modal glass-card supabase-modal">
             <div class="modal-header">
                 <div class="modal-title-icon">
-                    <i class="fa-solid fa-database"></i>
-                    <h3>Connect Supabase</h3>
+                    <div class="supabase-logo-icon">
+                        <svg width="18" height="18" viewBox="0 0 109 113" fill="none">
+                            <path d="M63.7 110.3c-2.5 3.2-7.8.7-7.6-3.5l1.5-53.6h36.5c6.6 0 10.2 7.6 6 12.6L63.7 110.3z"
+                                fill="url(#a)" />
+                            <path d="M63.7 110.3c-2.5 3.2-7.8.7-7.6-3.5l1.5-53.6h36.5c6.6 0 10.2 7.6 6 12.6L63.7 110.3z"
+                                fill="url(#b)" fill-opacity=".2" />
+                            <path d="M45.3 2.7c2.5-3.2 7.8-.7 7.6 3.5l-.7 53.6H16.7c-6.6 0-10.2-7.6-6-12.6L45.3 2.7z"
+                                fill="#3ECF8E" />
+                            <defs>
+                                <linearGradient id="a" x1="53.97" y1="54.97" x2="94.17" y2="71.82"
+                                    gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#249361" />
+                                    <stop offset="1" stop-color="#3ECF8E" />
+                                </linearGradient>
+                                <linearGradient id="b" x1="36.16" y1="30.58" x2="54.48" y2="65.72"
+                                    gradientUnits="userSpaceOnUse">
+                                    <stop />
+                                    <stop offset="1" stop-opacity="0" />
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <h3>Supabase</h3>
                 </div>
                 <button class="modal-close" id="supabase-close">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <div class="modal-body">
-                <p class="modal-description">Connect your Supabase project to enable database features.</p>
-                <label>Project URL</label>
-                <input type="text" id="supabase-url" placeholder="https://your-project.supabase.co">
-                <label>Anon Key</label>
-                <input type="text" id="supabase-key" placeholder="eyJhbGciOiJIUzI1NiIs...">
-                <label>Service Role Key <span class="label-hint">(optional)</span></label>
-                <input type="password" id="supabase-service-key" placeholder="eyJhbGciOiJIUzI1NiIs...">
+
+            <!-- Connection Status Banner -->
+            <div class="supabase-status-banner" id="supabase-status-banner">
+                <div class="status-icon disconnected" id="supabase-conn-icon">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </div>
+                <div class="status-info">
+                    <span class="status-main" id="supabase-conn-text">Not connected</span>
+                    <span class="status-sub" id="supabase-conn-sub">Enter your project credentials below</span>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button class="btn ghost" id="supabase-disconnect">Disconnect</button>
-                <button class="btn primary" id="supabase-save">
-                    <i class="fa-solid fa-bolt"></i> Connect
+
+            <!-- Tabs -->
+            <div class="supabase-tabs">
+                <button class="supabase-tab active" data-tab="credentials">
+                    <i class="fa-solid fa-key"></i> Credentials
                 </button>
+                <button class="supabase-tab" data-tab="auth">
+                    <i class="fa-solid fa-shield-halved"></i> Auth
+                </button>
+                <button class="supabase-tab" data-tab="database">
+                    <i class="fa-solid fa-table"></i> Database
+                </button>
+            </div>
+
+            <!-- Credentials Tab -->
+            <div class="supabase-tab-content active" id="tab-credentials">
+                <div class="modal-body">
+                    <label>Project URL</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-globe"></i>
+                        <input type="text" id="supabase-url" placeholder="https://abcdefgh.supabase.co">
+                    </div>
+
+                    <label>Anon / Public Key</label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-key"></i>
+                        <input type="text" id="supabase-key" placeholder="eyJhbGciOiJIUzI1NiIs...">
+                    </div>
+
+                    <label>Service Role Key <span class="label-hint">(for full access)</span></label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="supabase-service-key" placeholder="eyJhbGciOiJIUzI1NiIs...">
+                    </div>
+
+                    <p class="field-hint">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Find these in your <a href="https://supabase.com/dashboard/project/_/settings/api"
+                            target="_blank" class="hint-link">Supabase Dashboard → Settings → API</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Auth Tab -->
+            <div class="supabase-tab-content" id="tab-auth">
+                <div class="modal-body">
+                    <p class="tab-description">Enable authentication so the AI can generate login/signup flows in your
+                        app.</p>
+
+                    <div class="auth-section">
+                        <div class="auth-option-card">
+                            <div class="auth-option-header">
+                                <div class="auth-provider-icon">
+                                    <i class="fa-solid fa-envelope"></i>
+                                </div>
+                                <div>
+                                    <div class="auth-provider-name">Email & Password</div>
+                                    <div class="auth-provider-desc">Classic email/password signup & login</div>
+                                </div>
+                                <label class="toggle">
+                                    <input type="checkbox" id="auth-email" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="auth-option-card">
+                            <div class="auth-option-header">
+                                <div class="auth-provider-icon google">
+                                    <i class="fa-brands fa-google"></i>
+                                </div>
+                                <div>
+                                    <div class="auth-provider-name">Google OAuth</div>
+                                    <div class="auth-provider-desc">Sign in with Google account</div>
+                                </div>
+                                <label class="toggle">
+                                    <input type="checkbox" id="auth-google">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="auth-option-card">
+                            <div class="auth-option-header">
+                                <div class="auth-provider-icon github">
+                                    <i class="fa-brands fa-github"></i>
+                                </div>
+                                <div>
+                                    <div class="auth-provider-name">GitHub OAuth</div>
+                                    <div class="auth-provider-desc">Sign in with GitHub account</div>
+                                </div>
+                                <label class="toggle">
+                                    <input type="checkbox" id="auth-github">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="auth-option-card">
+                            <div class="auth-option-header">
+                                <div class="auth-provider-icon magic">
+                                    <i class="fa-solid fa-wand-sparkles"></i>
+                                </div>
+                                <div>
+                                    <div class="auth-provider-name">Magic Link</div>
+                                    <div class="auth-provider-desc">Passwordless login via email link</div>
+                                </div>
+                                <label class="toggle">
+                                    <input type="checkbox" id="auth-magic">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="field-hint">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Configure OAuth providers in your <a
+                            href="https://supabase.com/dashboard/project/_/auth/providers" target="_blank"
+                            class="hint-link">Supabase Dashboard → Auth → Providers</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Database Tab -->
+            <div class="supabase-tab-content" id="tab-database">
+                <div class="modal-body">
+                    <p class="tab-description">Database capabilities available to the AI when connected.</p>
+
+                    <div class="capability-list">
+                        <div class="capability-item">
+                            <i class="fa-solid fa-table-cells"></i>
+                            <div>
+                                <strong>Create Tables</strong>
+                                <p>AI can create tables with columns, types, and constraints</p>
+                            </div>
+                        </div>
+                        <div class="capability-item">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <div>
+                                <strong>Row Level Security</strong>
+                                <p>AI can create RLS policies for fine-grained access control</p>
+                            </div>
+                        </div>
+                        <div class="capability-item">
+                            <i class="fa-solid fa-code"></i>
+                            <div>
+                                <strong>Execute SQL</strong>
+                                <p>Run raw SQL queries, migrations, and stored procedures</p>
+                            </div>
+                        </div>
+                        <div class="capability-item">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                            <div>
+                                <strong>CRUD Operations</strong>
+                                <p>Insert, select, update, and delete data via REST API</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer supabase-footer">
+                <button class="btn danger-ghost" id="supabase-disconnect">
+                    <i class="fa-solid fa-plug-circle-xmark"></i> Disconnect
+                </button>
+                <div class="footer-right">
+                    <button class="btn ghost" id="supabase-test">
+                        <i class="fa-solid fa-plug-circle-check"></i> Test
+                    </button>
+                    <button class="btn primary supabase-connect-btn" id="supabase-save">
+                        <i class="fa-solid fa-bolt"></i> Connect
+                    </button>
+                </div>
             </div>
         </div>
     </div>
